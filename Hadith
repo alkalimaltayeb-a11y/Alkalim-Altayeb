@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مسابقة الأحاديث النبوية</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #5a4a9f;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .progress-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f6f8fb 0%, #e9ecef 100%);
+            border-radius: 15px;
+        }
+
+        .score-box, .question-counter {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #5a4a9f;
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            height: 15px;
+            background: #ddd;
+            border-radius: 10px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .question-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .question-type {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.4em;
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            padding: 20px;
+            background: #f8f9fa;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+        }
+
+        .option:hover {
+            background: #e9ecef;
+            transform: translateX(-5px);
+            border-color: #667eea;
+        }
+
+        .option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #5a4a9f;
+        }
+
+        .option.correct {
+            background: #28a745;
+            color: white;
+            border-color: #1e7e34;
+        }
+
+        .option.wrong {
+            background: #dc3545;
+            color: white;
+            border-color: #bd2130;
+        }
+
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .input-answer {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-answer:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .explanation {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff3cd;
+            border-right: 5px solid #ffc107;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: slideDown 0.5s ease;
+        }
+
+        .explanation h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .explanation p {
+            color: #856404;
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .result-screen.show {
+            display: block;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .result-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .result-score {
+            font-size: 3em;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .result-message {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .start-screen {
+            text-align: center;
+        }
+
+        .start-screen h2 {
+            color: #5a4a9f;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .start-screen ul {
+            text-align: right;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .start-screen li {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .question-text {
+                font-size: 1.2em;
+            }
+
+            .option {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🌙 مسابقة الأحاديث النبوية 🌙</h1>
+            <p>اختبر معرفتك بالأربعين النووية وجامع العلوم والحكم</p>
+        </div>
+
+        <div id="startScreen" class="start-screen">
+            <h2>مرحباً بك في رحلة علمية مباركة</h2>
+            <ul>
+                <li>📚 ٢٠ سؤال متنوع عن فوائد الأحاديث النبوية</li>
+                <li>🎯 أسئلة اختيار من متعدد وصح وخطأ وإكمال فراغ</li>
+                <li>💡 شروحات وفوائد بعد كل سؤال</li>
+                <li>⭐ تتبع نقاطك وتقدمك خطوة بخطوة</li>
+                <li>🏆 اكتشف مستواك في نهاية المسابقة</li>
+            </ul>
+            <button class="btn btn-primary" onclick="startQuiz()">ابدأ المسابقة الآن</button>
+        </div>
+
+        <div id="quizScreen" style="display: none;">
+            <div class="progress-section">
+                <div class="question-counter">
+                    السؤال: <span id="currentQuestion">1</span> / <span id="totalQuestions">20</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="score-box">
+                    النقاط: <span id="score">0</span>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-type" id="questionType"></span>
+                <div class="question-text" id="questionText"></div>
+                <div id="optionsContainer"></div>
+                <div class="explanation" id="explanation">
+                    <h3>💡 الفائدة والتوضيح:</h3>
+                    <p id="explanationText"></p>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" style="display: none;">
+                    السؤال التالي ←
+                </button>
+                <button class="btn btn-secondary" id="checkBtn" onclick="checkAnswer()" style="display: none;">
+                    تحقق من الإجابة
+                </button>
+            </div>
+        </div>
+
+        <div id="resultScreen" class="result-screen">
+            <div class="result-icon" id="resultIcon"></div>
+            <div class="result-score">النتيجة: <span id="finalScore">0</span> / 20</div>
+            <div class="result-message" id="resultMessage"></div>
+            <button class="btn btn-primary" onclick="restartQuiz()">ابدأ من جديد</button>
+        </div>
+    </div>
+
+    <script>
+        // P5.js particle background
+        function setup() {
+            let canvas = createCanvas(windowWidth, windowHeight);
+            canvas.parent('particles');
+        }
+
+        let particles = [];
+
+        function draw() {
+            clear();
+            
+            if (particles.length < 50) {
+                particles.push(new Particle());
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].display();
+                if (particles[i].finished()) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        class Particle {
+            constructor() {
+                this.x = random(width);
+                this.y = random(height);
+                this.vx = random(-1, 1);
+                this.vy = random(-1, 1);
+                this.alpha = 150;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= 1;
+            }
+
+            display() {
+                noStroke();
+                fill(255, 255, 255, this.alpha);
+                circle(this.x, this.y, 8);
+            }
+
+            finished() {
+                return this.alpha < 0;
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+
+        // Quiz data
+        const questions = [
+            {
+                type: "اختيار من متعدد",
+                question: "ما معنى كلمة 'اليقين' في حديث: 'إنما الأعمال بالنيات'؟",
+                options: ["الشك", "العلم الجازم", "الظن", "التردد"],
+                correct: 1,
+                explanation: "اليقين هو العلم الجازم الذي لا شك فيه. والحديث يعلمنا أن صلاح العمل مرتبط بصلاح النية، فالنية هي أساس قبول العمل عند الله."
+            },
+            {
+                type: "صح أو خطأ",
+                question: "من فوائد حديث 'من حسن إسلام المرء تركه ما لا يعنيه' أنه يدل على أهمية الانشغال بكل أمور الناس",
+                options: ["صح", "خطأ"],
+                correct: 1,
+                explanation: "العبارة خاطئة. الحديث يدل على العكس تماماً، فمن حسن الإسلام ترك ما لا يعني المسلم من أمور الناس، والتركيز على ما ينفعه في دينه ودنياه."
+            },
+            {
+                type: "إكمال الفراغ",
+                question: "أكمل الحديث: 'لا يؤمن أحدكم حتى يحب لأخيه ما _____ لنفسه'",
+                answer: "يحب",
+                explanation: "هذا الحديث العظيم يرسخ مبدأ الإيثار والمحبة بين المسلمين، ويعلمنا أن كمال الإيمان يتحقق بحب الخير للآخرين كما نحبه لأنفسنا."
+            },
+            {
+                type: "اختيار من متعدد",
+                question: "ما الفائدة الرئيسية من حديث 'الدين النصيحة'؟",
+                options: ["النصيحة واجبة لكل مسلم", "النصيحة من أركان الإيمان", "الدين كله قائم على النصيحة والإخلاص", "النصيحة تكون للحاكم فقط"],
+                correct: 2,
+                explanation: "الحديث يبين أن جوهر الدين هو النصيحة لله ولكتابه ولرسوله ولأئمة المسلمين وعامتهم، فالنصح والإخلاص أساس كل عبادة ومعاملة."
+            },
+            {
+                type: "صح أو خطأ",
+                question: "حديث 'من كان يؤمن بالله واليوم الآخر فليقل خيراً أو ليصمت' يدل على أهمية حفظ اللسان",
+                options: ["صح", "خطأ"],
+                correct: 0,
+                explanation: "صحيح. هذا الحديث من أعظم الأحاديث في حفظ اللسان، ويعلمنا أن المؤمن لا ينطق إلا بخير أو يصمت، وهذا من علامات الإيمان الصادق."
+            },
+            {
+                type: "اختيار من متعدد",
+                question: "ما معنى 'الورع' في الحديث 'دع ما يريبك إلى ما لا يريبك'؟",
+                options: ["الخوف من الله", "ترك الشبهات", "الزهد في الدنيا", "كثرة العبادة"],
+                correct: 1,
+                explanation: "الورع هو ترك الشبهات خوفاً من الوقوع في الحرام. والحديث يرشدنا إلى ترك ما فيه شك والأخذ بالمتيقن، وهذا من كمال الإيمان."
+            },
+            {
+                type: "إكمال الفراغ",
+                question: "أكمل: 'البر _____ والإثم ما حاك في نفسك'",
+                answer: "حسن الخلق",
+                explanation: "هذا الحديث يجمع البر في حسن الخلق، ويجعل من القلب ميزاناً للحق والباطل، فما اطمأنت إليه النفس فهو الحق، وما حاك فيها وكرهت أن يطلع عليه الناس فهو الإثم."
+            },
+            {
+                type: "اختيار من متعدد",
+                question: "من فوائد حديث 'احفظ الله يحفظك' تعليم المسلم:",
+                options: ["حفظ الأموال فقط", "حفظ حدود الله والعمل بها", "حفظ الأسرار", "حفظ الصحة"],
+                correct: 1,
+                explanation: "الحديث يعلمنا أن من حفظ حدود الله بالعمل بأوامره واجتناب نواهيه، حفظه الله في دينه ودنياه وآخرته، وهذا وعد إلهي كريم."
+            },
+            {
+                type: "صح أو خطأ",
+                question: "حديث 'إن الله طيب لا يقبل إلا طيباً' يشمل طيب الكسب والعمل والنية",
+                options: ["صح", "خطأ"],
+                correct: 0,
+                explanation: "صحيح تماماً. الحديث يدل على أن الله تعالى لا يقبل من الأعمال إلا ما كان خالصاً طيباً، سواء في النية أو العمل أو الكسب، وهذا من كمال صفاته سبحانه."
+            },
+            {
+                type: "اختيار من متعدد",
+                question: "ما الحكمة من حديث 'لا ضرر ولا ضرار'؟",
+                options: ["منع الظلم مطلقاً", "جواز الضرر اليسير", "الضرر للمصلحة جائز", "الضرر محرم والإضرار أشد"],
+                correct: 3,
+                explanation: "الحديث قاعدة عظيمة في الإسلام تمنع الضرر ابتداءً والضرار الذي هو الإضرار بالغير، وعليها بُنيت كثير من الأحكام الفقهية في المعاملات."
+            },
+            {
+                type: "إكمال الفراغ",
+                question: "أكمل: 'من حسن إسلام المرء _____ ما لا يعنيه'",
+                answer: "تركه",
+                explanation: "هذا الحديث من جوامع الكلم، يعلمنا أن الإسلام الحسن يقتضي ترك الفضول وما لا فائدة فيه، والتركيز على ما ينفع في الدين والدنيا."
+            },
+            {
+                type: "اختيار من متعدد",
+                question: "حديث 'لا يحل دم امرئ مسلم إلا بإحدى ثلاث' يدل على:",
+                options: ["جواز القتل مطلقاً", "عصمة دم المسلم إلا بحق", "تحريم القتل مطلقاً", "القصاص فقط"],
+                correct: 1,
+                explanation: "الحديث يقرر مبدأ عظيماً وهو عصمة دم المسلم وحرمته، فلا يحل إلا في ثلاث حالات: الكفر بعد الإيمان، والزنا بعد الإحصان، والقتل العمد."
+            },
+            {
+                type: "صح أو خطأ",
+                question: "من فوائد حديث 'ارحموا من في الأرض يرحمكم من في السماء' الترغيب في الرحمة بالخلق",
+                options: ["صح", "خطأ"],
+                correct: 0,
+                explanation: "صحيح. الحديث يعلمنا أن الرحمة بالخلق سبب لنيل رحمة الله، وهو يشمل الرحمة بالمسلم وغيره، بل حتى بالحيوان والجماد."
+            },
+            {
+                type: "اختيار من متعدد",
+                question: "ما معنى 'الاستقامة' في حديث 'قل آمنت بالله ثم استقم'؟",
+                options: ["الثبات على الطاعة", "ترك المعاصي فقط", "الاعتدال في العبادة", "الصبر على البلاء"],
+                correct: 0,
+                explanation: "الاستقامة تعني الثبات على طاعة الله والاستمرار عليها، وترك المعاصي والانحرافات. وهذا هو جوهر الإيمان العملي بعد الإقرار القلبي."
+            },
+            {
+                type: "إكمال الفراغ",
+                question: "أكمل: 'المسلم من سلم المسلمون من _____ ويده'",
+                answer: "لسانه",
+                explanation: "هذا الحديث يحدد حقيقة الإسلام العملي، فالمسلم الحق هو من أمِن الناس من أذى لسانه ويده، وهذا يشمل كل أنواع الأذى القولي والفعلي."
+            },
+            {
+                type: "صح أو خطأ",
+                question: "حديث 'الطهور شطر الإيمان' يعني أن الوضوء نصف الدين",
+                options: ["صح", "خطأ"],
+                correct: 1,
+                explanation: "العبارة غير دقيقة. المراد بالطهور هنا الطهارة الحسية والمعنوية، وهي شطر الإيمان لأن الإيمان يشمل التخلي عن الرذائل والتحلي بالفضائل، والطهارة أساس ذلك."
+            },
+            {
+                type: "اختيار من متعدد",
+                question: "من فوائد حديث 'إنما بعثت لأتمم مكارم الأخلاق' أن:",
+                options: ["الأخلاق هي الدين كله", "مقصد الرسالة إتمام الأخلاق", "الأخلاق أهم من العبادات", "الأخلاق من العادات"],
+                correct: 1,
+                explanation: "الحديث يبين أن من أعظم مقاصد بعثة النبي ﷺ هو إتمام مكارم الأخلاق، فالإسلام جاء ليكمل الأخلاق الفاضلة ويزيل الأخلاق الرذيلة."
+            },
+            {
+                type: "اختيار من متعدد",
+                question: "ماذا يعني 'الغضب' المنهي عنه في حديث 'لا تغضب'؟",
+                options: ["كل غضب مطلقاً", "الغضب المذموم الذي يخرج عن الحد", "الغضب لله", "الانفعال الطبيعي"],
+                correct: 1,
+                explanation: "المقصود هو الغضب المذموم الذي يجاوز الحد الشرعي ويؤدي إلى الظلم والعدوان. أما الغضب لله ولحرماته فهو محمود ومطلوب."
+            },
+            {
+                type: "صح أو خطأ",
+                question: "حديث 'الإيمان بضع وسبعون شعبة' يدل على أن الإيمان يشمل القول والعمل والاعتقاد",
+                options: ["صح", "خطأ"],
+                correct: 0,
+                explanation: "صحيح. الحديث يبين أن الإيمان ليس مجرد كلمة، بل هو اعتقاد بالقلب ونطق باللسان وعمل بالجوارح، ويتفاوت بزيادة الطاعات ونقصانها."
+            },
+            {
+                type: "إكمال الفراغ",
+                question: "أكمل: 'من كان يؤمن بالله واليوم الآخر فليكرم _____'",
+                answer: "ضيفه",
+                explanation: "هذا الحديث يربط بين الإيمان بالله واليوم الآخر وبين مكارم الأخلاق كإكرام الضيف وحسن الجوار والقول الحسن، فهذه من علامات الإيمان الصادق."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswer = null;
+
+        function startQuiz() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('quizScreen').style.display = 'block';
+            
+            anime({
+                targets: '#quizScreen',
+                opacity: [0, 1],
+                translateY: [30, 0],
+                duration: 800,
+                easing: 'easeOutQuad'
+            });
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('totalQuestions').textContent = questions.length;
+            document.getElementById('questionType').textContent = q.type;
+            document.getElementById('questionText').textContent = q.question;
+            document.getElementById('explanation').classList.remove('show');
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            userAnswer = null;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            if (q.type === "إكمال الفراغ") {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'input-answer';
+                input.id = 'fillBlankInput';
+                input.placeholder = 'اكتب الإجابة هنا...';
+                optionsContainer.appendChild(input);
+                document.getElementById('checkBtn').style.display = 'inline-block';
+            } else {
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options';
+                
+                q.options.forEach((option, index) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option';
+                    optionDiv.textContent = option;
+                    optionDiv.onclick = () => selectOption(index, optionDiv);
+                    optionsDiv.appendChild(optionDiv);
+                });
+                
+                optionsContainer.appendChild(optionsDiv);
+            }
+
+            updateProgress();
+            
+            anime({
+                targets: '.question-card',
+                scale: [0.95, 1],
+                opacity: [0, 1],
+                duration: 600,
+                easing: 'easeOutQuad'
+            });
+        }
+
+        function selectOption(index, element) {
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            userAnswer = index;
+            document.getElementById('checkBtn').style.display = 'inline-block';
+        }
+
+        function checkAnswer() {
+            const q = questions[currentQuestionIndex];
+            let isCorrect = false;
+
+            if (q.type === "إكمال الفراغ") {
+                const input = document.getElementById('fillBlankInput');
+                const userInput = input.value.trim();
+                isCorrect = userInput === q.answer;
+                
+                if (isCorrect) {
+                    input.style.borderColor = '#28a745';
+                    input.style.background = '#d4edda';
+                } else {
+                    input.style.borderColor = '#dc3545';
+                    input.style.background = '#f8d7da';
+                }
+                input.disabled = true;
+            } else {
+                isCorrect = userAnswer === q.correct;
+                const options = document.querySelectorAll('.option');
+                
+                options.forEach((opt, index) => {
+                    opt.classList.add('disabled');
+                    if (index === q.correct) {
+                        opt.classList.add('correct');
+                    } else if (index === userAnswer && !isCorrect) {
+                        opt.classList.add('wrong');
+                    }
+                });
+
+                anime({
+                    targets: isCorrect ? options[userAnswer] : options[q.correct],
+                    scale: [1, 1.05, 1],
+                    duration: 500,
+                    easing: 'easeInOutQuad'
+                });
+            }
+
+            if (isCorrect) {
+                score++;
+                document.getElementById('score').textContent = score;
+                
+                anime({
+                    targets: '#score',
+                    scale: [1, 1.5, 1],
+                    color: ['#5a4a9f', '#28a745', '#5a4a9f'],
+                    duration: 600,
+                    easing: 'easeInOutQuad'
+                });
+            }
+
+            document.getElementById('explanation').classList.add('show');
+            document.getElementById('explanationText').textContent = q.explanation;
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'inline-block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function showResults() {
+            document.getElementById('quizScreen').style.display = 'none';
+            document.getElementById('resultScreen').classList.add('show');
+            document.getElementById('finalScore').textContent = score;
+
+            let icon, message;
+            const percentage = (score / questions.length) * 100;
+
+            if (percentage >= 90) {
+                icon = '🏆';
+                message = 'ممتاز! أنت عالم بالأحاديث النبوية! معرفتك عميقة وفهمك راسخ. بارك الله في علمك وزادك من فضله.';
+            } else if (percentage >= 75) {
+                icon = '⭐';
+                message = 'رائع جداً! لديك معرفة قوية بالأحاديث النبوية. استمر في طلب العلم وستصل إلى القمة بإذن الله.';
+            } else if (percentage >= 60) {
+                icon = '✨';
+                message = 'جيد جداً! أنت على الطريق الصحيح. واصل دراسة الأحاديث وتدبر معانيها، فالعلم يُنال بالمثابرة.';
+            } else if (percentage >= 40) {
+                icon = '📚';
+                message = 'جيد! لديك أساس طيب، لكن تحتاج لمزيد من المراجعة. اقرأ شروح الأحاديث وستتحسن نتائجك بإذن الله.';
+            } else {
+                icon = '💪';
+                message = 'ابدأ رحلتك الآن! العلم يحتاج إلى صبر ومثابرة. اقرأ الأربعين النووية وجامع العلوم والحكم بتأنٍّ، وستجد الفائدة العظيمة.';
+            }
+
+            document.getElementById('resultIcon').textContent = icon;
+            document.getElementById('resultMessage').textContent = message;
+
+            anime({
+                targets: '.result-screen',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 1000,
+                easing: 'easeOutElastic(1, .8)'
+            });
+
+            anime({
+                targets: '.result-icon',
+                rotate: [0, 360],
+                duration: 1500,
+                easing: 'easeInOutQuad'
+            });
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswer = null;
+            document.getElementById('score').textContent = '0';
+            document.getElementById('resultScreen').classList.remove('show');
+            document.getElementById('startScreen').style.display = 'block';
+            
+            anime({
+                targets: '#startScreen',
+                opacity: [0, 1],
+                scale: [0.9, 1],
+                duration: 800,
+                easing: 'easeOutQuad'
+            });
+        }
+    </script>
+</body>
+</html>
